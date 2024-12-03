@@ -1,14 +1,19 @@
 const fs = require('fs');
 const path = require('path');
 
+//const collection = [];
+
 // Function to search for a card by name in the JSON file
 function getCardInfo(name, jsonFile = path.join(__dirname, 'default-cards.json')) {
     try {
+        //read the file
         const fileContent = fs.readFileSync(jsonFile, { encoding: 'utf-8' });
+
         const cards = JSON.parse(fileContent);
 
         let cardNotFound = true;
 
+        //iterate through list, if card names match - fetch price and imageURL
         for (let i = 0; i < cards.length; i++) {
             if (cards[i].name === name) {
                 const price = cards[i]['prices']['usd'];
@@ -16,12 +21,12 @@ function getCardInfo(name, jsonFile = path.join(__dirname, 'default-cards.json')
 
                 if (price === null) continue; // if price is null don't print info
 
-                //temp
-                // collection.push({
-                //     name: cards[i].name,
-                //     price: cards[i]['prices']['usd'],
-                //     set: cards[i]['set_name'],
-                // });
+                //temp - automatically adds all results to collection list
+                collection.push({
+                    name: cards[i].name,
+                    price: cards[i]['prices']['usd'],
+                    set: cards[i]['set_name'],
+                });
                 //temp
 
                 console.log(`Card found: ${cards[i].name}`);
@@ -114,14 +119,46 @@ const sortedCollectionName = mergeSortByName(collection);
 // sortedCollectionName.reverse(); // switch to descending
 console.log(sortedCollectionName);
 
-//TEST THE FUNCTION
-//void getCardInfo("Sol Ring");
-/*collection.sort((a, b) => a.price - b.price);
-collection.reverse();*/
-// for(let i = 0; i < collection.length; i++) {
-//     console.log(collection[i]);
-//     console.log("\n");
-// }
+// heapify function for heapSort
+function heapify(collection, numCards, i) {
+
+    let maxNodeIndex = i;
+    let left = (2*i) +1;
+    let right = (2*i) +2;
+
+    // If left node exists and is greater than the max/root node, we found a new max
+    if (left < numCards && Number(collection[left].price) > Number(collection[maxNodeIndex].price))
+        maxNodeIndex = left;
+
+    // If right node exists and is greater than the max/root node, we found a new max
+    if (right < numCards && Number(collection[right].price) > Number(collection[maxNodeIndex].price))
+        maxNodeIndex = right;
+
+    if (maxNodeIndex !== i) {
+        //swap and recursively heapify
+        [collection[i], collection[maxNodeIndex]] = [collection[maxNodeIndex], collection[i]];
+        heapify(collection, numCards, maxNodeIndex);
+    }
+}
+
+function heapSort(collection) {
+    const numCards = collection.length;
+
+    // Build the max heap
+    for (let i = Math.floor(numCards / 2) - 1; i >= 0; i--)
+        heapify(collection, numCards, i);
+
+    // One by one extract an element from heap
+    for (let i = numCards - 1; i > 0; i--) {
+
+        // Move current root to end
+        [collection[0], collection[i]] = [collection[i], collection[0]];
+
+        // Call max heapify on the reduced heap
+        heapify(collection, i, 0);
+    }
+}
+
 
 // Search for a card by name
 async function searchSpecificCardName(cardName) {
@@ -176,16 +213,10 @@ async function searchAutoComplete(cardName){
 }
 
 //void searchSpecificCardName("Sol Ring");
-//void searchSpecificCardName("Command Tower");
 
-// TO DO
+// TO DO - add to collection functionality
 // 1) search for a card
 // 2) click on a card
 // 3) return card object (name, value, set)
-// 4) addToCollection takes card object and places into obj array
-
-
-
-
-
-//void searchAutoComplete("Command T");
+// 4) take card object and places into obj array 'collection'
+// 5) give user option to sort cards based on two options (heap sort and merge sort)
