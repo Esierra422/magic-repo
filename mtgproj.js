@@ -1,7 +1,45 @@
 const fs = require('fs');
 const path = require('path');
+const axios = require('axios');
 
 //const collection = [];
+
+async function download_latest_default_cards() {
+    const bulkDataUrl = "https://api.scryfall.com/bulk-data";
+
+    try {
+        const bulkResponse = await axios.get(bulkDataUrl, {
+            headers: {
+                'User-Agent': 'axios'
+            }
+        });
+
+        const bulkData = bulkResponse.data;
+        const defaultCardsInfo = bulkData.data.find(item => item.name === "Default Cards");
+
+        if (!defaultCardsInfo) {
+            console.error("Default Cards file not found in bulk data.");
+            return;
+        }
+
+        const downloadUri = defaultCardsInfo.download_uri;
+        console.log(`Downloading Default Cards file from ${downloadUri}`);
+
+        const downloadResponse = await axios.get(downloadUri, { responseType: 'stream' });
+        const outputFile = 'default-cards.json';
+        const writer = fs.createWriteStream(outputFile);
+
+        downloadResponse.data.pipe(writer);
+
+        writer.on('finish', () => {
+            console.log(`Default Cards file successfully downloaded as '${outputFile}'.`);
+        });
+    } catch (error) {
+        console.error("Error fetching bulk data or downloading file:", error.response ? error.response.data : error.message);
+    }
+}
+
+//download_latest_default_cards();
 
 // Function to search for a card by name in the JSON file
 function getCardInfo(name, jsonFile = path.join(__dirname, 'default-cards.json')) {
