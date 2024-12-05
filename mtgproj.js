@@ -1,8 +1,24 @@
 const fs = require('fs');
 const path = require('path');
+<<<<<<< HEAD
 const axios = require('axios');
+=======
+const https = require('https');
+>>>>>>> d0ad6bf (Integrated the backend + frontend, Added a check for if the user has the JSON card file downloaded, downloads if the user doesn't, searchSpecificCardName returns an array of cards matching the search, Changed getCardInfo() to not search by name and just parse all cards from the JSON file into an array, Implemented search function, Justin implemented the time measurements for sorting)
 
-//const collection = [];
+const collection = [];
+
+function checkForFile(){
+    if (fs.existsSync("..../default-cards.json")){
+        return;
+    } else{
+        https.get('https://data.scryfall.io/default-cards/default-cards-20241204100728.json', (a) => {
+            const streamCards = fs.createWriteStream("..../default-cards.json");
+            a.pipe(streamCards);
+            streamCards.on("finish", () => {filestream.close();});
+        });
+    }
+}
 
 async function download_latest_default_cards() {
     const bulkDataUrl = "https://api.scryfall.com/bulk-data";
@@ -195,6 +211,7 @@ function heapSort(collection) {
         // Call max heapify on the reduced heap
         heapify(collection, i, 0);
     }
+    return collection;
 }
 
 
