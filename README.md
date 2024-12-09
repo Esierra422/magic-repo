@@ -7,3 +7,4 @@
 7) In CMD: npm run dev
 8) Head to any browser and go to "localhost:3000" for testing
 9) In app: click the search bar and hit enter, the cards will load in
+Note: All of our written functional code is in app/app/page.tsx and app/app/api/path/route.ts. mtgproj.js was the one that was developed on before the front end was written and doesn't represent the most recent code.
